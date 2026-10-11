@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rt3-ultrawide"
-version = "0.2.0"
+version = "0.3.0"
 description = "Experimental borderless widescreen HUD patch for the Steam build of Railroad Tycoon 3"
 readme = "README.md"
 requires-python = ">=3.12"

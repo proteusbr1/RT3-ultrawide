@@ -16,7 +16,8 @@ ORIGINAL_HASHES = dict(zip(
      "23edbf68fd293557c93a5e9a3fdd13786506cdf35e4d7bcaae0ffb83f827b398"]))
 
 
-def menu_entries(data):
+def menu_entries(data, names=None):
+    names = ORIGINAL_HASHES if names is None else names
     if len(data) < 8:
         raise ValueError("Truncated texture archive.")
     version, count = struct.unpack_from("<II", data)
@@ -31,14 +32,14 @@ def menu_entries(data):
         if end > len(data):
             raise ValueError("Texture archive entry exceeds file bounds.")
         spans.append((start, end))
-        if name in ORIGINAL_HASHES:
+        if name in names:
             if name in result or flag != 0:
                 raise ValueError("Duplicate or compressed menu texture entry.")
             result[name] = (start, end)
     spans.sort()
     if any(right[0] < left[1] for left, right in zip(spans, spans[1:])):
         raise ValueError("Overlapping texture archive entries.")
-    if result.keys() != ORIGINAL_HASHES.keys():
+    if result.keys() != names.keys():
         raise ValueError("Required menu textures are missing.")
     return result
 

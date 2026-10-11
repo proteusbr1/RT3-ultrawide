@@ -18,6 +18,11 @@ background has its own drawing path in Setup window control 3022, while the
 interactive menu retains the existing coordinate transform. See
 [menu artwork](MENU_ARTWORK.md) for the archive format, rendering, and provenance.
 
+Version 0.3.0 adds 36 loading texture payloads and a separate full-display drawing
+path for LoadScreen control 34003. The game's native random variant determines
+the UV bounds; the progress controls remain on the normal UI transform.
+See [loading artwork](LOADING_ARTWORK.md) for the verified mappings and packaging.
+
 ## Coordinate spaces
 
 The original UI assumes a 4:3 coordinate canvas. For display width `W`, height

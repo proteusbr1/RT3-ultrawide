@@ -12,6 +12,7 @@ import zipfile
 
 from . import __version__
 from .menu import MENU_ARCHIVE, patch_archive
+from .loading import patch_archive as patch_loading_archive
 from .config import (ARCHIVE_SHA256, CPL_SHA256, ENGINE, EXE_SHA256, HOTKEYS, WRAPPER_SHA256,
                      UPGRADE_WRAPPER_SHA256, UPGRADE_CPL_SHA256,
                      WRAPPER_URL, engine_config, hotkey_config, wrapper_config)
@@ -177,7 +178,7 @@ def install(game, width, height, archive=None):
     dll, default_config, cpl = wrapper_files(archive)
     config = config_path.read_bytes() if config_path.exists() else default_config
     files = {ENGINE: engine, HOTKEYS: hotkeys, "D3D8.dll": dll, "dgVoodooCpl.exe": cpl,
-             MENU_ARCHIVE: patch_archive(safe_file(game, MENU_ARCHIVE).read_bytes()),
+             MENU_ARCHIVE: patch_loading_archive(patch_archive(safe_file(game, MENU_ARCHIVE).read_bytes())),
              "dgVoodoo.conf": wrapper_config(config, width, height)}
     files.update(launcher_files(game))
     require_closed()

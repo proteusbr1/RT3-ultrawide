@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 — 2026-10-11 (experimental)
+
+- Added five expanded loading panoramas: trestle bridge, penny on a rail,
+  locomotive cab, covered station, and freight yard.
+- Preserve native random scene selection and draw the loading status/progress
+  separately at their original proportions.
+- Replace the three-piece loading backgrounds with one continuous full-display
+  quad, using per-scene UV bounds and uniform aspect-ratio cropping.
+- Validate and replace 36 loading texture payloads alongside the six menu
+  payloads, preserving every other archive byte and the first backup baseline.
+- Added loading-upgrade, partial-install detection, unknown-texture rejection,
+  and all-variant texture checks. The complete suite now has 25 tests.
+- Avoid reporting a temporary unavailable renderer as a resolution change;
+  keep the existing stop-on-confirmed-size-change protection.
+
 ## 0.2.0 — 2026-10-11 (experimental)
 
 - Added an expanded main-menu background with new woodwork and stained glass.

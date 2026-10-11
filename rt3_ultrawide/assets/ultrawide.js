@@ -25,8 +25,8 @@ for (const [va, expected] of signatures) {
   if (actual !== expected) throw Error('Unsupported code or another hook at ' + va.toString(16) + ': ' + actual);
 }
 
-const state = Memory.alloc(128);
-state.writeByteArray(new Uint8Array(128));
+const state = Memory.alloc(224);
+state.writeByteArray(new Uint8Array(224));
 state.writeU32(Math.round(SCALE_X * 1048576));
 state.add(24).writeU32((1048576-state.readU32())*8);
 state.add(28).writeU32((1048576-state.readU32())*8);
@@ -37,6 +37,7 @@ const HUD_BOTTOM=0.954;
 const HUD_Y=1-HUD_BOTTOM;
 state.add(64).writeS32(Math.round(HUD_Y*16777216));
 const menuArt = typeof MENU_ART === 'undefined' ? null : MENU_ART;
+const loadingArt = typeof LOADING_ART === 'undefined' ? null : LOADING_ART;
 if (menuArt) {
   const aspect = (4 / 3) / SCALE_X, artAspect = menuArt.image_width / menuArt.image_height;
   // Uniform cover: narrower screens crop the sides; wider screens crop below.
@@ -47,6 +48,19 @@ if (menuArt) {
    (left + visibleWidth) / menuArt.texture_width, visibleHeight / menuArt.texture_height]
     .forEach((v, i) => state.add((21 + i) * 4).writeFloat(v));
   state.add(104).writeU32(1);
+}
+if (loadingArt) {
+  if (loadingArt.variants.length !== 6) throw Error('Incomplete loading artwork metadata');
+  loadingArt.variants.forEach((art, variant) => {
+    const aspect = (4 / 3) / SCALE_X;
+    const width = Math.min(art.image_width, art.image_height * aspect);
+    const height = Math.min(art.image_height, art.image_width / aspect);
+    const left = (art.image_width - width) / 2, top = (art.image_height - height) / 2;
+    [left / art.texture_width, top / art.texture_height,
+     (left + width) / art.texture_width, (top + height) / art.texture_height]
+      .forEach((v, i) => state.add((32 + variant * 4 + i) * 4).writeFloat(v));
+  });
+  state.add(108).writeU32(1);
 }
 const splitSkin=new NativeCallback((renderer,a)=>{
   const x1=a.readFloat(),y1=a.add(4).readFloat(),x2=a.add(8).readFloat(),y2=a.add(12).readFloat();
@@ -187,24 +201,34 @@ static unsigned int control_offset(unsigned char *c) {
 }
 void window_draw_enter(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
+  s->depth=draw_depth;
+  /* Loading can draw its window directly between the regular UI frames. */
+  if(state[27] && *(unsigned int *)ic->cpu_context->ecx==0x5d1194 && !draw_depth)draw_depth=1;
   s->offset=draw_offset;draw_offset=window_offset((unsigned char *)ic->cpu_context->ecx);
   s->skin=state[12];state[12]=0;s->changed=0;
   s->y=draw_y;draw_y=window_y((unsigned char *)ic->cpu_context->ecx);
 }
 void control_draw_enter(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
+  s->depth=draw_depth;
   s->offset=draw_offset;draw_offset=control_offset((unsigned char *)ic->cpu_context->ecx);
   s->y=draw_y;draw_y=control_y((unsigned char *)ic->cpu_context->ecx);
   {unsigned char *c=(unsigned char *)ic->cpu_context->ecx,*w=*(unsigned char **)(c+0x86);
    unsigned int id=*(unsigned short *)(c+4),vt=w?*(unsigned int *)w:0;
    s->skin=state[12];state[12]=vt==0x5d0eb8?(id==2057?1:(id==2058?2:0)):0;
    if(state[26] && vt==0x5d1664 && id==3022)state[12]=3;
+   if(state[27] && vt==0x5d1194 && id==34003){
+     unsigned char *options=*(unsigned char **)0x6cec74;
+     unsigned int variant=options?options[0x2c7]:0;
+     if(variant<=5){state[29]=variant;state[12]=4;}
+   }
    s->changed=(vt==0x5d0eb8 && id==2005) || (vt==0x5d0f3c && (id==31011 || id==31012 || id==31013));
    if(state[26] && vt==0x5d1664 && (id==3023 || id==3024 || id==3422))s->changed=1;
+   if(state[27] && vt==0x5d1194 && (id==34004 || id==34005))s->changed=1;
    if(s->changed){s->p=(unsigned int *)(c+0x68);s->saved=*s->p;*s->p &= ~1u;}}
 }
 void scope_draw_leave(GumInvocationContext *ic){
-  Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));draw_offset=s->offset;draw_y=s->y;state[12]=s->skin;if(s->changed)*s->p=s->saved;
+  Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));draw_depth=s->depth;draw_offset=s->offset;draw_y=s->y;state[12]=s->skin;if(s->changed)*s->p=s->saved;
 }
 void selftest(void) { state[8]=forward(0); state[9]=forward(0x3f800000); state[10]=inverse(state[8]); }
 unsigned int test_forward(unsigned int x){return forward(x);}
@@ -219,11 +243,13 @@ void primitive(GumInvocationContext *ic) {
   a[1]=translate_y(a[1],draw_y);a[3]=translate_y(a[3],draw_y);state[2]++;
 }
 void quad_primitive(GumInvocationContext *ic){
-  if(draw_depth && state[12]==3){
+  if(draw_depth && (state[12]==3 || state[12]==4)){
     unsigned int *a=(unsigned int *)(ic->cpu_context->esp+4);
+    unsigned int uv=state[12]==3?21:32+state[29]*4;
     a[0]=0;a[1]=0;a[2]=0x3f800000;a[3]=0x3f800000;
-    a[7]=state[21];a[8]=state[22];a[9]=state[23];a[10]=state[24];
-    state[25]++;return;
+    a[7]=state[uv];a[8]=state[uv+1];a[9]=state[uv+2];a[10]=state[uv+3];
+    if(state[12]==3)state[25]++;else state[28]++;
+    return;
   }
   if(draw_depth && state[12])split_skin((void *)ic->cpu_context->ecx,(unsigned int *)(ic->cpu_context->esp+4));
   primitive(ic);
@@ -426,6 +452,6 @@ rpc.exports={
   }const hotkeys=[];for(let key=0;key<256;key++){let p=at(0x6acd78+key*12).readPointer();for(let i=0;!p.isNull()&&i<100;i++,p=p.readPointer())hotkeys.push({key,modifier:p.add(0x94).readU32(),description:p.add(0x10).readCString()});}
   const camera=at(0x62be68).readPointer();
   return {windows:out,hotkeys,rightPanelVisible:state.add(60).readU32(),hudY:HUD_Y,fullscreen:renderer.add(0x114226).readU8(),cameraRect:camera.isNull()?null:[0x50,0x54,0x58,0x5c].map(o=>camera.add(o).readFloat()),cameraUpdates:state.add(76).readU32(),viewports:Array.from(viewportSamples)};},
-  stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),selftest:test};}
+  stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),loadingQuads:state.add(112).readU32(),loadingVariant:state.add(116).readU32(),selftest:test};}
 };
-send({ready:true,revision:10,menuArtwork:!!menuArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
+send({ready:true,revision:11,menuArtwork:!!menuArt,loadingArtwork:!!loadingArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});

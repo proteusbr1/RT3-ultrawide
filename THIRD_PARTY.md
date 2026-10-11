@@ -44,6 +44,12 @@ underlying game artwork rights remain with their respective owners. The MIT
 license covers this project's original code and documentation, not those marks
 or underlying artwork rights. See [artwork provenance](docs/MENU_ARTWORK.md).
 
+The five loading panoramas were also generated with the built-in image tool,
+using locally extracted atlases as references. The distributed PNGs and DDS
+payloads are those generated reinterpretations; the original loading images are
+not included. The same underlying artwork-rights distinction applies. See
+[loading artwork provenance and prompts](docs/LOADING_ARTWORK.md).
+
 The game is required and is not included. This repository contains no game
 executable, extracted original game asset files, save files, or copied game configuration
 baseline. The installer reads and backs up the player's own files locally.

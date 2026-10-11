@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT))
 from rt3_ultrawide import __version__
 from rt3_ultrawide.install import digest, wrapper_files
 from rt3_ultrawide.menu import archive_bytes
+from rt3_ultrawide.loading import archive_bytes as loading_archive_bytes
 
 
 def main():
@@ -18,6 +19,7 @@ def main():
         raise SystemExit("Build the Windows release on Windows with Python 3.12 x64.")
     wrapper_files()  # Verify the bundled dependency before packaging.
     archive_bytes()
+    loading_archive_bytes()
     output = ROOT / "dist" / uuid.uuid4().hex
     subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], cwd=ROOT, check=True)
     subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed",

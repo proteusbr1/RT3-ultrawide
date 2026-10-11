@@ -37,6 +37,19 @@ covering the complete display with proportional woodwork and glass. Clicking
 the background remained continuous. The original texture archive was backed up
 and all bytes outside the six menu payloads were checked unchanged.
 
+Version 0.3.0: the packaged installer updated the real installation, retaining
+the same original archive backup. Every byte outside the 42 menu/loading
+payloads was compared with that baseline and remained identical. A fresh
+3440×1440 session passed the native coordinate checks with revision 11 and both
+artwork paths enabled. After loading a saved game, the owner confirmed that the
+loading image filled the display without misplaced fragments and that its
+text/progress appeared correctly. All five generated source images were visually
+inspected, but every random variant has not been individually captured in-game.
+
+The resolution monitor now distinguishes an unavailable renderer during
+transitions/teardown from a confirmed change in width/height. Unavailability is
+bounded to ten seconds; valid changed dimensions still stop the helper.
+
 - Native X transforms: 12,012 cases across four scales and three anchors;
   maximum observed error below 0.00124 pixel at width 3440.
 - Native Y translation: 1,001 round trips; maximum observed error below
@@ -46,12 +59,15 @@ and all bytes outside the six menu payloads were checked unchanged.
   hotkey collisions, stable original backups, restore conflicts, corrupt backups,
   rollback after write failure, unsafe manifest paths, unsupported executables,
   and the bundled graphics-wrapper hashes.
-- The 21-test suite includes a complete offline install/restore cycle in an
+- The 25-test suite includes a complete offline install/restore cycle in an
   isolated synthetic fixture, restoration of the startup display flag, an
   upgrade/rollback fixture, and regression coverage for upstream CR-CR-LF config
   line endings so installation does not create duplicate INI sections.
 - Menu tests cover payload-only changes, idempotent installation, unknown texture
   rejection, archive bounds/overlap validation, and texture-storage dimensions.
+- Loading tests cover all 36 texture levels, preservation of menu/directory and
+  unrelated data during upgrades, partial-install detection, original/installed
+  state recognition, and rejection of unknown textures.
 - The packaged Windows EXE was launched locally; its GUI detected the Steam
   installation and 3440×1440 display, and its diagnostic recognized the expected
   game/wrapper hashes. The packaged launcher attached to the running game,
@@ -66,7 +82,7 @@ flow, or other mod combination has been tested. Long-session stability and a
 clean-machine install matrix remain future validation work.
 
 The classic fonts and in-game HUD textures remain unchanged; the menu background
-is replaced in 0.2.0. The hidden footer removes its
+is replaced in 0.2.0 and loading panoramas are added in 0.3.0. The hidden footer removes its
 country/hint display, and the collapse widgets are replaced by using Tab. Some
 specialized windows may still need their own anchoring classification.
 

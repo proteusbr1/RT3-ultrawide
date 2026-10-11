@@ -14,6 +14,7 @@ import frida
 from .config import WRAPPER_SHA256, validate_resolution
 from .install import STATE, atomic_write, check_game, digest, prepare_launch
 from .menu import installed_metadata
+from .loading import installed_metadata as installed_loading_metadata
 
 PROBE = """
 let unpacked=false;
@@ -116,7 +117,9 @@ def run(game):
             scale = (height * 4 / 3) / width
             source = (Path(__file__).parent / "assets/ultrawide.js").read_text(encoding="utf-8")
             menu = installed_metadata(game)
-            script = session.create_script(f"const SCALE_X={scale!r};\nconst MENU_ART={json.dumps(menu)};\n" + source)
+            loading = installed_loading_metadata(game)
+            script = session.create_script(f"const SCALE_X={scale!r};\nconst MENU_ART={json.dumps(menu)};\n"
+                                           f"const LOADING_ART={json.dumps(loading)};\n" + source)
             script.on("message", message)
             script.load()
             if not ready.wait(5) or errors:
@@ -124,11 +127,25 @@ def run(game):
             atomic_write(ready_file, json.dumps({"helper_pid": os.getpid(), "game_pid": candidates[0].pid,
                                                 "mode": mode}).encode())
             logging.info("Ready: %sx%s, game PID %s", width, height, candidates[0].pid)
+            unavailable_since = None
             while not stopped.wait(0.5) and not (folder / "STOP").exists():
-                if probe.exports_sync.mode() != mode:
-                    raise RuntimeError("Resolution changed. Exit and relaunch to realign the UI and mouse.")
+                current_mode = probe.exports_sync.mode()
+                # The renderer can be unavailable during teardown or transitions.
+                # A missing mode is not evidence that the display size changed.
+                if current_mode is None:
+                    if unavailable_since is None:
+                        unavailable_since = time.monotonic()
+                    if time.monotonic() - unavailable_since > 10:
+                        raise RuntimeError("Renderer remained unavailable for 10 seconds. Relaunch the game.")
+                    continue
+                unavailable_since = None
+                if current_mode != mode:
+                    raise RuntimeError(f"Resolution changed from {mode} to {current_mode}. "
+                                       "Exit and relaunch to realign the UI and mouse.")
                 if (folder / "INSPECT").exists():
-                    atomic_write(folder / "layout.json", json.dumps(script.exports_sync.inspect(), indent=2).encode())
+                    report = script.exports_sync.inspect()
+                    report["stats"] = script.exports_sync.stats()
+                    atomic_write(folder / "layout.json", json.dumps(report, indent=2).encode())
                     (folder / "INSPECT").unlink()
             if errors:
                 raise RuntimeError("A runtime hook reported an error. Patch detached.")

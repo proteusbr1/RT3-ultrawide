@@ -1,0 +1,146 @@
+{
+  "loadscreen1_A.dds": {
+    "directory_hash": 1094484105,
+    "sha256": "b553a75547eaa9bf5185ffec5d74041ef26478c537a31674c7ee9f06370df72e"
+  },
+  "loadscreen1_B.dds": {
+    "directory_hash": 2622512340,
+    "sha256": "9a47c9e5082bf9fb9741ebd5606a1c851f93204b752727fd84bc1719a504203e"
+  },
+  "loadscreen1_C.dds": {
+    "directory_hash": 4224541628,
+    "sha256": "3b7694c57cb8e8c94a9af62be4670f5681e7aec73e7d9a852816698cffc59024"
+  },
+  "loadscreen1_D.dds": {
+    "directory_hash": 2406064938,
+    "sha256": "23f8b3f1cbd039a07297b8d044421e894649656219af966f9fea380c578c57c2"
+  },
+  "loadscreen1_E.dds": {
+    "directory_hash": 2830577927,
+    "sha256": "6b5e36155c09f34d6db8a309a9df90be06ddd2a9bf898330cf72942dc9607cd3"
+  },
+  "loadscreen1_F.dds": {
+    "directory_hash": 1241155165,
+    "sha256": "554a036f1f0f80f9d83fdbb4f25c56d6d4d42e024f886b69246ef44648eb7255"
+  },
+  "loadscreen2_A.dds": {
+    "directory_hash": 1525713259,
+    "sha256": "90d59c61dae572af5eee2391364c3818b380a989329c86b26fa9e0de979ae85b"
+  },
+  "loadscreen2_B.dds": {
+    "directory_hash": 884687332,
+    "sha256": "2327238826d8e252c4250f01a592bc826aed78795ea484419be45e8e1ebd45db"
+  },
+  "loadscreen2_C.dds": {
+    "directory_hash": 1309200321,
+    "sha256": "7f01975d12ad3bf91678cee32262bc6512294d47590c594a0474c97998a4407a"
+  },
+  "loadscreen2_D.dds": {
+    "directory_hash": 2837228556,
+    "sha256": "92206c2b458802e24bc2d9426a025fbae481e749cb6c373e8e8c9fbd18817e48"
+  },
+  "loadscreen2_E.dds": {
+    "directory_hash": 144290548,
+    "sha256": "e8bde2997bc27829c75b9536d363c2a7d355936d4cb83cf6d3b2a88595bf6a27"
+  },
+  "loadscreen2_F.dds": {
+    "directory_hash": 2620781154,
+    "sha256": "1f86283b0500a270fce5bc68acb3624e7a7cfe9ef74307e0fcf61c14e43d756a"
+  },
+  "loadscreen3_A.dds": {
+    "directory_hash": 1275227995,
+    "sha256": "578edd87464fb611298647360279faed2b08d83d5f5aaa3509f8a8d2833cdc51"
+  },
+  "loadscreen3_B.dds": {
+    "directory_hash": 3963969628,
+    "sha256": "5c76aefa27b195056a49bdb10ba21e5f439c34569211bc922272c70cd7e08739"
+  },
+  "loadscreen3_C.dds": {
+    "directory_hash": 2374546866,
+    "sha256": "dd3661007bdf6888d871cb382317e94f571402bf48ea5f7622d61591fa9a6100"
+  },
+  "loadscreen3_D.dds": {
+    "directory_hash": 1483228046,
+    "sha256": "e70b76702b2bb52c417c1f270205141bc564b5c98cd481f17ab404862190c71f"
+  },
+  "loadscreen3_E.dds": {
+    "directory_hash": 3011321818,
+    "sha256": "12122737095e46e76fb11ab2da5f1ac54704fcf53c9c73f0f69695890c04bc95"
+  },
+  "loadscreen3_F.dds": {
+    "directory_hash": 2582612453,
+    "sha256": "b7cbb1a06f6b62589c6667d235fa40d9b6c1b5b73753730bda788f4c5865443a"
+  },
+  "loadscreen4_A.dds": {
+    "directory_hash": 1308050591,
+    "sha256": "052acac5b4978a916166841690aed26921aa681bacce5c82cf2a4e72615ac60a"
+  },
+  "loadscreen4_B.dds": {
+    "directory_hash": 4013595125,
+    "sha256": "c16483d8a005103c0ae462a679b6c0f6b57e12fa7415cf8aa747539c4df08f33"
+  },
+  "loadscreen4_C.dds": {
+    "directory_hash": 2407434998,
+    "sha256": "27f6d88de436fcee4c531a5d1bf1bbba2278f0062d7f5e78ad5784a17cbe1f42"
+  },
+  "loadscreen4_D.dds": {
+    "directory_hash": 2619631425,
+    "sha256": "923966e01930bab5a32c8a12ba2c33c09975fadd79ec21778db920cbb805ee32"
+  },
+  "loadscreen4_E.dds": {
+    "directory_hash": 4221660712,
+    "sha256": "1311a4eba00eedbf1096915eaddceaa7b0ff637c1e16accee4997f22210797b4"
+  },
+  "loadscreen4_F.dds": {
+    "directory_hash": 3718950296,
+    "sha256": "be41ad83c52f4c2f3c6139fc4a1daa1f0983efd264b6e3da7fb41f6c8587e368"
+  },
+  "loadscreen5_A.dds": {
+    "directory_hash": 2665821656,
+    "sha256": "d4f12e418f6ffaeeea0d94867eb96312533c1d33afe5a00013e6ecbd7bef338d"
+  },
+  "loadscreen5_B.dds": {
+    "directory_hash": 4193915427,
+    "sha256": "80549a2b66b3da89639339ebcbe3f92d9cab59ee7491add9c90d861ff6bf5155"
+  },
+  "loadscreen5_C.dds": {
+    "directory_hash": 1271857955,
+    "sha256": "0c3e5b893d11117c32af911004ec7f3b0d848aeec667a8f36b8a9777c140feff"
+  },
+  "loadscreen5_D.dds": {
+    "directory_hash": 2873887243,
+    "sha256": "f13e0ba306755e1467876d792afae978a3e310340d3c86923388d330c1e50af7"
+  },
+  "loadscreen5_E.dds": {
+    "directory_hash": 106948182,
+    "sha256": "1ea0905ef244e6448bac6ee14172b4e05409a7682875b4fff44bbed5454bb7af"
+  },
+  "loadscreen5_F.dds": {
+    "directory_hash": 3510662195,
+    "sha256": "565ccea576b3c0b018c326af1a8f1d3352c0cbd2ff401f8aac5b2581d808d5cc"
+  },
+  "loadscreen_A.dds": {
+    "directory_hash": 2709063728,
+    "sha256": "d4f12e418f6ffaeeea0d94867eb96312533c1d33afe5a00013e6ecbd7bef338d"
+  },
+  "loadscreen_B.dds": {
+    "directory_hash": 16125719,
+    "sha256": "80549a2b66b3da89639339ebcbe3f92d9cab59ee7491add9c90d861ff6bf5155"
+  },
+  "loadscreen_C.dds": {
+    "directory_hash": 1544153955,
+    "sha256": "0c3e5b893d11117c32af911004ec7f3b0d848aeec667a8f36b8a9777c140feff"
+  },
+  "loadscreen_D.dds": {
+    "directory_hash": 4232961124,
+    "sha256": "f13e0ba306755e1467876d792afae978a3e310340d3c86923388d330c1e50af7"
+  },
+  "loadscreen_E.dds": {
+    "directory_hash": 224191307,
+    "sha256": "1ea0905ef244e6448bac6ee14172b4e05409a7682875b4fff44bbed5454bb7af"
+  },
+  "loadscreen_F.dds": {
+    "directory_hash": 1752219542,
+    "sha256": "565ccea576b3c0b018c326af1a8f1d3352c0cbd2ff401f8aac5b2581d808d5cc"
+  }
+}

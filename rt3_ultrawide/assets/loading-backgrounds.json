@@ -1,0 +1,47 @@
+{
+  "sha256": "3c90968407c0f73ddbabe00c54595d0df2cc565dc686d7b8a952ad17ed86d65e",
+  "variants": [
+    {
+      "scene": "bridge",
+      "image_width": 1942,
+      "image_height": 809,
+      "texture_width": 2048,
+      "texture_height": 1024
+    },
+    {
+      "scene": "penny",
+      "image_width": 1942,
+      "image_height": 809,
+      "texture_width": 2048,
+      "texture_height": 1024
+    },
+    {
+      "scene": "cab",
+      "image_width": 1941,
+      "image_height": 810,
+      "texture_width": 2048,
+      "texture_height": 1024
+    },
+    {
+      "scene": "station",
+      "image_width": 1942,
+      "image_height": 809,
+      "texture_width": 2048,
+      "texture_height": 1024
+    },
+    {
+      "scene": "yard",
+      "image_width": 1942,
+      "image_height": 809,
+      "texture_width": 2048,
+      "texture_height": 1024
+    },
+    {
+      "scene": "bridge",
+      "image_width": 1942,
+      "image_height": 809,
+      "texture_width": 2048,
+      "texture_height": 1024
+    }
+  ]
+}
