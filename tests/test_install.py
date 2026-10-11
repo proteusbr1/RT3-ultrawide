@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from rt3_ultrawide import install as installer
 from rt3_ultrawide.config import BINDINGS, CPL_SHA256, ENGINE, HOTKEYS, WRAPPER_SHA256
+from rt3_ultrawide.menu import MENU_ARCHIVE, archive_bytes
 
 
 class InstallationTests(unittest.TestCase):
@@ -88,6 +89,7 @@ class InstallationTests(unittest.TestCase):
         exe = self.game / "RT3.exe"
         exe.write_bytes(b"synthetic executable fixture")
         baseline = {
+            MENU_ARCHIVE: archive_bytes(),
             ENGINE: struct.pack("<III", 1051, 1600, 1200) + bytes(40),
             HOTKEYS: "\r\n".join(f"{name} = F12" for name in BINDINGS).encode(),
         }
@@ -125,6 +127,7 @@ class InstallationTests(unittest.TestCase):
 
     def test_known_wrapper_upgrade_preserves_config_and_restores_old_binaries(self):
         baseline = {ENGINE: struct.pack("<III", 1051, 1600, 1200) + bytes(40),
+                    MENU_ARCHIVE: archive_bytes(),
                     HOTKEYS: "\n".join(f"{name} = F12" for name in BINDINGS).encode(),
                     "D3D8.dll": b"known older wrapper fixture",
                     "dgVoodooCpl.exe": b"known older control panel fixture",

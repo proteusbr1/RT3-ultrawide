@@ -12,6 +12,12 @@ JavaScript asset installs native hooks through Frida's `CModule`. Most hot-path
 coordinate transforms run in native code. The HUD texture split uses a scoped
 callback to reuse the game's own draw primitive and original texture coordinates.
 
+Version 0.2.0 also replaces six validated menu texture payloads in the local
+2D archive. Full-file backup and restore cover this on-disk change. The generated
+background has its own drawing path in Setup window control 3022, while the
+interactive menu retains the existing coordinate transform. See
+[menu artwork](MENU_ARTWORK.md) for the archive format, rendering, and provenance.
+
 ## Coordinate spaces
 
 The original UI assumes a 4:3 coordinate canvas. For display width `W`, height

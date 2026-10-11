@@ -24,6 +24,7 @@ system, verify it before installing.
 | `D3D8.dll` | Unmodified x86 dgVoodoo 2.87.5 |
 | `dgVoodooCpl.exe` | Matching official control panel |
 | `dgVoodoo.conf` | Borderless output, native resolution, watermark off |
+| `Data/2D/rt3_2DDS.PK4` | Six menu texture payloads replaced; full original backed up |
 | `Launch RT3 Ultrawide.cmd` | Persistent entry point |
 | `RT3Ultrawide/launch.ps1` | Launcher command |
 | `RT3Ultrawide/app/` | Self-contained helper (prebuilt release only) |
@@ -36,6 +37,11 @@ only if someone builds a source distribution without the bundled archive.
 
 Unrelated configuration entries are preserved during installation. Custom hotkey
 conflicts are reported instead of silently assigning two actions to one key.
+
+Allow at least 500 MB of free space for the self-contained runtime, graphics
+wrapper, menu texture archive, backups, and temporary atomic writes. The menu
+installer validates all six source textures and preserves every unrelated byte
+in the archive. Existing unknown replacements of those textures are rejected.
 
 ## Launching
 

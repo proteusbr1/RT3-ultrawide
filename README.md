@@ -18,12 +18,17 @@ split between the bottom corners and correctly aligned mouse input.
 - The right green background disappears when there is no information panel open.
 - Removed unused footer, excess HUD background, and lower collapse widgets. **Tab** still hides the HUD.
 - Proportional menus and cursor, with corrected minimap, briefing, and World Overview input.
+- Expanded wood-and-stained-glass menu artwork fills the screen without stretching;
+  the original interactive buttons remain proportional.
 - **WASD** pans the camera; **Space** pauses/resumes.
 - dgVoodoo **2.87.5 is included**, with its watermark disabled in the installed configuration.
 - Local backups and a restore command. The game executable and saves are not modified.
 
-This keeps the game's original artwork and fonts. It is a layout/input patch,
-not a replacement texture pack.
+The in-game HUD and fonts keep their original artwork. The main menu uses a new
+AI-assisted background inspired by the original, with newly drawn side details.
+See [menu artwork and implementation](docs/MENU_ARTWORK.md).
+
+![Expanded menu background; interactive buttons are drawn separately by the game](rt3_ultrawide/assets/menu-background.png)
 
 ## Quick start
 

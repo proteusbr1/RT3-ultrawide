@@ -7,6 +7,11 @@ Use `Launch RT3 Ultrawide.cmd`, not Steam's regular Play button. Check
 dgVoodoo can still display the game at high resolution, but the HUD corrections
 will not be applied.
 
+Since 0.2.0, the replacement menu texture also requires the helper's drawing
+correction. Steam's regular Play button can show misplaced texture fragments.
+Close the game and launch through the installed ultrawide shortcut. To return
+to regular Steam launching, restore the original files with the installer.
+
 ## Unsupported RT3.exe
 
 Only the SHA-256 listed in the README has known addresses and signatures. Steam,

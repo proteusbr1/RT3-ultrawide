@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-11 (experimental)
+
+- Added an expanded main-menu background with new woodwork and stained glass.
+- Draw the menu background across the display with uniform scaling and aspect
+  cropping; retain original button positions, sizes, labels, and hit testing.
+- Replaced the old split background and Coast to Coast overlay with one composition.
+- Validate and back up the game's texture archive, replacing only six known menu
+  texture payloads. All other archive bytes are preserved; restore returns the
+  entire original archive.
+- Added archive-boundary, overlap, preservation, and repeated-install tests.
+
 ## 0.1.0 — 2026-10-11 (experimental)
 
 First public package, consolidating development revisions 1–9.

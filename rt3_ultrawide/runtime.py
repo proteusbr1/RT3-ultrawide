@@ -13,6 +13,7 @@ import frida
 
 from .config import WRAPPER_SHA256, validate_resolution
 from .install import STATE, atomic_write, check_game, digest, prepare_launch
+from .menu import installed_metadata
 
 PROBE = """
 let unpacked=false;
@@ -114,7 +115,8 @@ def run(game):
             validate_resolution(width, height)
             scale = (height * 4 / 3) / width
             source = (Path(__file__).parent / "assets/ultrawide.js").read_text(encoding="utf-8")
-            script = session.create_script(f"const SCALE_X={scale!r};\n" + source)
+            menu = installed_metadata(game)
+            script = session.create_script(f"const SCALE_X={scale!r};\nconst MENU_ART={json.dumps(menu)};\n" + source)
             script.on("message", message)
             script.load()
             if not ready.wait(5) or errors:

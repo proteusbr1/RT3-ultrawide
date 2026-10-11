@@ -31,6 +31,12 @@ were observed during the development session.
 
 ## Automated checks
 
+Version 0.2.0: the generated background was observed in a fresh 3440×1440 game,
+covering the complete display with proportional woodwork and glass. Clicking
+**Single Player** opened the corresponding submenu at the expected coordinates;
+the background remained continuous. The original texture archive was backed up
+and all bytes outside the six menu payloads were checked unchanged.
+
 - Native X transforms: 12,012 cases across four scales and three anchors;
   maximum observed error below 0.00124 pixel at width 3440.
 - Native Y translation: 1,001 round trips; maximum observed error below
@@ -40,10 +46,12 @@ were observed during the development session.
   hotkey collisions, stable original backups, restore conflicts, corrupt backups,
   rollback after write failure, unsafe manifest paths, unsupported executables,
   and the bundled graphics-wrapper hashes.
-- The 17-test suite includes a complete offline install/restore cycle in an
+- The 21-test suite includes a complete offline install/restore cycle in an
   isolated synthetic fixture, restoration of the startup display flag, an
   upgrade/rollback fixture, and regression coverage for upstream CR-CR-LF config
   line endings so installation does not create duplicate INI sections.
+- Menu tests cover payload-only changes, idempotent installation, unknown texture
+  rejection, archive bounds/overlap validation, and texture-storage dimensions.
 - The packaged Windows EXE was launched locally; its GUI detected the Steam
   installation and 3440×1440 display, and its diagnostic recognized the expected
   game/wrapper hashes. The packaged launcher attached to the running game,
@@ -57,7 +65,8 @@ claim that every monitor, DPI setting, GPU, scenario, editor window, multiplayer
 flow, or other mod combination has been tested. Long-session stability and a
 clean-machine install matrix remain future validation work.
 
-The classic fonts and textures remain unchanged. The hidden footer removes its
+The classic fonts and in-game HUD textures remain unchanged; the menu background
+is replaced in 0.2.0. The hidden footer removes its
 country/hint display, and the collapse widgets are replaced by using Tab. Some
 specialized windows may still need their own anchoring classification.
 

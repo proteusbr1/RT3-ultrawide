@@ -35,8 +35,17 @@ exception permits distributing the generated application under its own license.
 
 ## Railroad Tycoon 3
 
+The AI-assisted menu background reinterprets the original menu's woodwork,
+stained glass, and game branding. It was generated with OpenAI's built-in image
+tool, then encoded into DDS texture levels. The source PNG and those generated
+texture levels are included; the extracted original atlas used as a local
+reference is not. Railroad Tycoon 3 and Coast to Coast names, logos, and any
+underlying game artwork rights remain with their respective owners. The MIT
+license covers this project's original code and documentation, not those marks
+or underlying artwork rights. See [artwork provenance](docs/MENU_ARTWORK.md).
+
 The game is required and is not included. This repository contains no game
-executable, extracted game assets, save files, or copied game configuration
+executable, extracted original game asset files, save files, or copied game configuration
 baseline. The installer reads and backs up the player's own files locally.
 Railroad Tycoon 3 and its assets remain the property of their respective owners.
 This is an unofficial community modification.

@@ -36,6 +36,18 @@ const HUD_SPLIT=0.4;
 const HUD_BOTTOM=0.954;
 const HUD_Y=1-HUD_BOTTOM;
 state.add(64).writeS32(Math.round(HUD_Y*16777216));
+const menuArt = typeof MENU_ART === 'undefined' ? null : MENU_ART;
+if (menuArt) {
+  const aspect = (4 / 3) / SCALE_X, artAspect = menuArt.image_width / menuArt.image_height;
+  // Uniform cover: narrower screens crop the sides; wider screens crop below.
+  const visibleWidth = Math.min(menuArt.image_width, menuArt.image_height * aspect);
+  const visibleHeight = Math.min(menuArt.image_height, menuArt.image_width / aspect);
+  const left = (menuArt.image_width - visibleWidth) / 2;
+  [left / menuArt.texture_width, 0,
+   (left + visibleWidth) / menuArt.texture_width, visibleHeight / menuArt.texture_height]
+    .forEach((v, i) => state.add((21 + i) * 4).writeFloat(v));
+  state.add(104).writeU32(1);
+}
 const splitSkin=new NativeCallback((renderer,a)=>{
   const x1=a.readFloat(),y1=a.add(4).readFloat(),x2=a.add(8).readFloat(),y2=a.add(12).readFloat();
   if(x2<=x1 || y2<=y1)return;
@@ -186,7 +198,9 @@ void control_draw_enter(GumInvocationContext *ic){
   {unsigned char *c=(unsigned char *)ic->cpu_context->ecx,*w=*(unsigned char **)(c+0x86);
    unsigned int id=*(unsigned short *)(c+4),vt=w?*(unsigned int *)w:0;
    s->skin=state[12];state[12]=vt==0x5d0eb8?(id==2057?1:(id==2058?2:0)):0;
+   if(state[26] && vt==0x5d1664 && id==3022)state[12]=3;
    s->changed=(vt==0x5d0eb8 && id==2005) || (vt==0x5d0f3c && (id==31011 || id==31012 || id==31013));
+   if(state[26] && vt==0x5d1664 && (id==3023 || id==3024 || id==3422))s->changed=1;
    if(s->changed){s->p=(unsigned int *)(c+0x68);s->saved=*s->p;*s->p &= ~1u;}}
 }
 void scope_draw_leave(GumInvocationContext *ic){
@@ -205,6 +219,12 @@ void primitive(GumInvocationContext *ic) {
   a[1]=translate_y(a[1],draw_y);a[3]=translate_y(a[3],draw_y);state[2]++;
 }
 void quad_primitive(GumInvocationContext *ic){
+  if(draw_depth && state[12]==3){
+    unsigned int *a=(unsigned int *)(ic->cpu_context->esp+4);
+    a[0]=0;a[1]=0;a[2]=0x3f800000;a[3]=0x3f800000;
+    a[7]=state[21];a[8]=state[22];a[9]=state[23];a[10]=state[24];
+    state[25]++;return;
+  }
   if(draw_depth && state[12])split_skin((void *)ic->cpu_context->ecx,(unsigned int *)(ic->cpu_context->esp+4));
   primitive(ic);
 }
@@ -408,4 +428,4 @@ rpc.exports={
   return {windows:out,hotkeys,rightPanelVisible:state.add(60).readU32(),hudY:HUD_Y,fullscreen:renderer.add(0x114226).readU8(),cameraRect:camera.isNull()?null:[0x50,0x54,0x58,0x5c].map(o=>camera.add(o).readFloat()),cameraUpdates:state.add(76).readU32(),viewports:Array.from(viewportSamples)};},
   stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),selftest:test};}
 };
-send({ready:true,revision:9,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
+send({ready:true,revision:10,menuArtwork:!!menuArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
