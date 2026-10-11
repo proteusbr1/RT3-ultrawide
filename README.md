@@ -4,7 +4,7 @@ An experimental Windows mod for the **Steam edition of Railroad Tycoon 3**.
 Play in a borderless window at your monitor's resolution, with the original HUD
 split between the bottom corners and correctly aligned mouse input.
 
-**[Download the Windows package](https://github.com/proteusbr1/TR3-ultrawide/releases)**
+**[Download the Windows package](https://github.com/proteusbr1/RT3-ultrawide/releases)**
 · [Installation](docs/INSTALLATION.md)
 · [Controls](docs/CONTROLS.md)
 · [Troubleshooting](docs/TROUBLESHOOTING.md)

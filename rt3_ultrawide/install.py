@@ -63,7 +63,7 @@ def wrapper_files(archive=None):
     if archive is None and bundled.exists():
         archive = bundled.read_bytes()
     if archive is None:
-        request = urllib.request.Request(WRAPPER_URL, headers={"User-Agent": "TR3-ultrawide/" + __version__})
+        request = urllib.request.Request(WRAPPER_URL, headers={"User-Agent": "RT3-ultrawide/" + __version__})
         with urllib.request.urlopen(request, timeout=90) as response:
             archive = response.read(32 * 1024 * 1024 + 1)
     if digest(archive) != ARCHIVE_SHA256:

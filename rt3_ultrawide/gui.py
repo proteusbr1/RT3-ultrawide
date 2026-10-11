@@ -85,7 +85,7 @@ def show():
     ttk.Label(frame, textvariable=status, wraplength=650, justify="left").grid(sticky="nw")
     frame.rowconfigure(8, weight=1)
     ttk.Label(frame, text="Backups and logs: <game folder> / RT3Ultrawide\n"
-              "Help: github.com/proteusbr1/TR3-ultrawide", foreground="#555555").grid(row=9, sticky="sw", pady=(18, 0))
+              "Help: github.com/proteusbr1/RT3-ultrawide", foreground="#555555").grid(row=9, sticky="sw", pady=(18, 0))
     results = queue.Queue()
     active = False
     controls = []

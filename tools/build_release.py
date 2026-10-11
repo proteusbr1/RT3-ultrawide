@@ -45,7 +45,7 @@ def main():
         raise RuntimeError("Python license not found; do not distribute an incomplete package.")
     release = ROOT / "release"
     release.mkdir(exist_ok=True)
-    archive = Path(shutil.make_archive(str(release / f"TR3-Ultrawide-v{__version__}-windows-x64"),
+    archive = Path(shutil.make_archive(str(release / f"RT3-Ultrawide-v{__version__}-windows-x64"),
                                       "zip", destination.parent, destination.name))
     (release / "SHA256SUMS.txt").write_text(f"{digest(archive.read_bytes())}  {archive.name}\n", encoding="ascii")
     (ROOT / "build/latest-package.txt").write_text(str(destination), encoding="utf-8")
