@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rt3-ultrawide"
+version = "0.1.0"
+description = "Experimental borderless widescreen HUD patch for the Steam build of Railroad Tycoon 3"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = ["frida==17.15.5"]
+
+[project.scripts]
+rt3-ultrawide = "rt3_ultrawide.__main__:main"
+
+[tool.setuptools.package-data]
+rt3_ultrawide = ["assets/*.js", "vendor/*"]
