@@ -43,8 +43,8 @@ def show():
         pass
     root = tk.Tk()
     root.title("Railroad Tycoon 3 • Ultrawide")
-    root.geometry("740x530")
-    root.minsize(660, 500)
+    root.geometry("740x570")
+    root.minsize(660, 540)
     style = ttk.Style(root)
     if "vista" in style.theme_names():
         style.theme_use("vista")
@@ -76,6 +76,9 @@ def show():
     ttk.Label(dimensions, text=" × ").pack(side="left")
     ttk.Entry(dimensions, textvariable=height, width=7).pack(side="left")
     ttk.Label(dimensions, text="  Use your monitor's native resolution").pack(side="left")
+    reimagined = tk.BooleanVar(value=not (Path(game.get()) / "RT3Ultrawide/ORIGINAL_MUSEUM").exists())
+    ttk.Checkbutton(frame, text="Reimagined museum artwork (applies on the next Launch)",
+                    variable=reimagined).grid(sticky="w", pady=(0, 14))
     ttk.Label(frame, text="Save and exit the game before installing or restoring.\n"
               "dgVoodoo 2.87.5 is included. Original settings are backed up locally.",
               wraplength=660).grid(sticky="w", pady=(0, 16))
@@ -83,9 +86,9 @@ def show():
     buttons.grid(sticky="w", pady=(0, 12))
     status = tk.StringVar(value="Choose your game folder, then install. After installation, use Launch.")
     ttk.Label(frame, textvariable=status, wraplength=650, justify="left").grid(sticky="nw")
-    frame.rowconfigure(8, weight=1)
+    frame.rowconfigure(9, weight=1)
     ttk.Label(frame, text="Backups and logs: <game folder> / RT3Ultrawide\n"
-              "Help: github.com/proteusbr1/RT3-ultrawide", foreground="#555555").grid(row=9, sticky="sw", pady=(18, 0))
+              "Help: github.com/proteusbr1/RT3-ultrawide", foreground="#555555").grid(row=10, sticky="sw", pady=(18, 0))
     results = queue.Queue()
     active = False
     controls = []
@@ -99,6 +102,7 @@ def show():
             if not game.get() or not (folder / "RT3.exe").is_file():
                 raise ValueError("Select the folder containing RT3.exe.")
             w, h = int(width.get()), int(height.get())
+            use_museum_art = reimagined.get()
         except ValueError as error:
             messagebox.showerror("Check your settings", str(error))
             return
@@ -116,6 +120,8 @@ def show():
             try:
                 if action == "install":
                     result = install(folder, w, h)
+                    from .museum import set_style
+                    set_style(folder, use_museum_art)
                 elif action == "restore":
                     result = uninstall(folder, preserve_changed=True)
                 elif action == "doctor":
@@ -128,6 +134,8 @@ def show():
                         f"Helper {report['version']} · Frida {report['frida']}",
                     ])
                 else:
+                    from .museum import set_style
+                    set_style(folder, use_museum_art)
                     result = launch(folder)
                 results.put((True, result))
             except Exception as error:

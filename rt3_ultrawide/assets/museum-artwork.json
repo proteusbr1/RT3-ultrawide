@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "rooms": [
+    {
+      "room": "A",
+      "file": "museum-a.bgra.zlib",
+      "source_size": [
+        1942,
+        809
+      ],
+      "image_width": 3840,
+      "image_height": 1600,
+      "texture_width": 4096,
+      "texture_height": 2048,
+      "sha256": "3680b9d84a1400874fee4a5b80f5dbcb9185f3c6982cf580f8ecd4cf4e19fe22",
+      "raw_sha256": "44f9cf47a0baa33c9a175927ab715412129e5e46f5c3ca2a14a219b7dc7e59b9"
+    },
+    {
+      "room": "B",
+      "file": "museum-b.bgra.zlib",
+      "source_size": [
+        1942,
+        809
+      ],
+      "image_width": 3840,
+      "image_height": 1600,
+      "texture_width": 4096,
+      "texture_height": 2048,
+      "sha256": "715ff8e4efff20ed315c4b3e9cbff352f442f99ff811a1245d5b0c464c215918",
+      "raw_sha256": "145ade577a57c0feeade78bd2848e1e35d0dcd5b154c76273946f384c954fe22"
+    },
+    {
+      "room": "C",
+      "file": "museum-c.bgra.zlib",
+      "source_size": [
+        1942,
+        809
+      ],
+      "image_width": 3840,
+      "image_height": 1600,
+      "texture_width": 4096,
+      "texture_height": 2048,
+      "sha256": "78f11577c87a90771ef7a604aa5f36074f44d45dfd87b08573a594b6504eb4f9",
+      "raw_sha256": "8d8d44510e62961377a01e7384c2dcdc245647bc7e14efe94981f1c8e888bd49"
+    },
+    {
+      "room": "D",
+      "file": "museum-d.bgra.zlib",
+      "source_size": [
+        1942,
+        809
+      ],
+      "image_width": 3840,
+      "image_height": 1600,
+      "texture_width": 4096,
+      "texture_height": 2048,
+      "sha256": "599aa7224d0c7a597a3ca94ab56003678a773bf7e8b017da21b596008c95520e",
+      "raw_sha256": "78d3f7db8176bc484a7499e0aa3d65d86ab49591de70a90da858a77dc6eb3c26"
+    }
+  ]
+}

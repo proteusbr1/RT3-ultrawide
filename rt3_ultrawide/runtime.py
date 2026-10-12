@@ -15,6 +15,7 @@ from .config import WRAPPER_SHA256, validate_resolution
 from .install import STATE, atomic_write, check_game, digest, prepare_launch
 from .menu import installed_metadata
 from .loading import installed_metadata as installed_loading_metadata
+from .museum import prepare as prepare_museum
 
 PROBE = """
 let unpacked=false;
@@ -39,6 +40,39 @@ rpc.exports={
 
 def processes():
     return [p for p in frida.get_local_device().enumerate_processes() if p.name.lower() == "rt3.exe"]
+
+
+def process_token(pid):
+    """PID plus Windows creation time, so a reused PID is a fresh process."""
+    import ctypes
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.GetProcessTimes.argtypes = [wintypes.HANDLE] + [ctypes.POINTER(wintypes.FILETIME)] * 4
+    kernel.GetProcessTimes.restype = wintypes.BOOL
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.OpenProcess(0x1000, False, pid)
+    if not handle:
+        raise ctypes.WinError(ctypes.get_last_error())
+    times = [wintypes.FILETIME() for _ in range(4)]
+    try:
+        if not kernel.GetProcessTimes(handle, *(ctypes.byref(t) for t in times)):
+            raise ctypes.WinError(ctypes.get_last_error())
+        return {"pid": pid, "created": (times[0].dwHighDateTime << 32) | times[0].dwLowDateTime}
+    finally:
+        kernel.CloseHandle(handle)
+
+
+def reserve_session(folder, token):
+    """Never inject twice into the same RT3 lifetime, even after an error/stop."""
+    path = folder / "session.json"
+    if path.exists():
+        previous = json.loads(path.read_text(encoding="utf-8"))
+        if previous == token:
+            raise RuntimeError("This game session already used the helper. Close RT3 and launch it again; "
+                               "reattaching to the same process can crash the game.")
+    atomic_write(path, json.dumps(token).encode())
 
 
 @contextmanager
@@ -75,6 +109,9 @@ def run(game):
         candidates = processes()
         if len(candidates) != 1:
             raise RuntimeError("Exactly one running RT3.exe is required.")
+        museum = prepare_museum(game)
+        token = process_token(candidates[0].pid)
+        reserve_session(folder, token)
         session = frida.attach(candidates[0].pid)
         stopped = threading.Event()
         ready = threading.Event()
@@ -116,15 +153,18 @@ def run(game):
             validate_resolution(width, height)
             scale = (height * 4 / 3) / width
             source = (Path(__file__).parent / "assets/ultrawide.js").read_text(encoding="utf-8")
+            museum_source = (Path(__file__).parent / "assets/museum.js").read_text(encoding="utf-8")
             menu = installed_metadata(game)
             loading = installed_loading_metadata(game)
             script = session.create_script(f"const SCALE_X={scale!r};\nconst MENU_ART={json.dumps(menu)};\n"
-                                           f"const LOADING_ART={json.dumps(loading)};\n" + source)
+                                           f"const LOADING_ART={json.dumps(loading)};\n"
+                                           f"const MUSEUM_ART={json.dumps(museum)};\n" + museum_source + "\n" + source)
             script.on("message", message)
             script.load()
             if not ready.wait(5) or errors:
                 raise RuntimeError("Patch failed its startup checks; see the runtime log.")
             atomic_write(ready_file, json.dumps({"helper_pid": os.getpid(), "game_pid": candidates[0].pid,
+                                                "game_token": token, "helper_token": process_token(os.getpid()),
                                                 "mode": mode}).encode())
             logging.info("Ready: %sx%s, game PID %s", width, height, candidates[0].pid)
             unavailable_since = None
@@ -164,6 +204,16 @@ def run(game):
 
 def launch(game):
     game = check_game(game)
+    folder = game / STATE
+    candidates = processes()
+    if len(candidates) == 1:
+        try:
+            ready = json.loads((folder / "ready.json").read_text(encoding="utf-8"))
+            if (ready.get("game_token") == process_token(candidates[0].pid)
+                    and ready.get("helper_token") == process_token(ready["helper_pid"])):
+                return "Ultrawide is already active. Changed museum preferences apply after restarting RT3."
+        except (OSError, ValueError, KeyError):
+            pass
     if not processes():
         prepare_launch(game)
         os.startfile("steam://rungameid/7610")
