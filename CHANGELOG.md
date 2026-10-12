@@ -2,6 +2,14 @@
 
 ## 0.4.0 — Unreleased (experimental)
 
+- Hold Shift with WASD for 3x keyboard panning; remap conflicting Shift shortcuts.
+- Add Q/E rotation, R/V zoom, Ctrl+S save, Ctrl+O load and F5 quick save.
+- Move station construction to Ctrl+E and traffic density to Shift+F5.
+- Add optional side-button Escape/Pause through the native game input queue,
+  with focus, gameplay, held-key and native hotkey-lock guards.
+- Persist the mouse preference in the launcher; document bindings and design choices.
+- Add mouse gesture/native adapter regression tests.
+
 - Add four reimagined museum paintings with 3840 × 1600 exports, antialiased navigation
   controls, frame-synchronized dissolves and repositioned campaign cabinet hit areas.
 - Reduce artwork-mode room changes to about 0.55 seconds, retaining the native

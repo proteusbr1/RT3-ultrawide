@@ -14,10 +14,16 @@ HOTKEYS = "HotKeys/hotkeys.txt"
 BINDINGS = {
     "Camera Forward": "W", "Camera Backward": "S",
     "Camera Left": "A", "Camera Right": "D",
+    "Camera Rotate Left": "Q", "Camera Rotate Right": "E",
+    "Camera Zoom In": "R", "Camera Zoom Out": "V",
+    "Save game": "CTRL+S", "Load game": "CTRL+O",
+    "Quick save": "F5", "Buy station": "CTRL+E",
+    "Overview - Traffic Density": "SHIFT+F5",
     "Pause Game (Toggle On/Off)": "Space",
     "Go to Chat in multi-player": "CTRL+Space",
-    "Current train whistles": "SHIFT+W", "Last dialog": "SHIFT+D",
-    "Ledger - Game Status": "SHIFT+A", "Station list": "CTRL+F",
+    "Current train whistles": "CTRL+W", "Last dialog": "CTRL+D",
+    "Ledger - Game Status": "CTRL+A", "Station list": "CTRL+F",
+    "Station detail": "CTRL+G",
 }
 
 

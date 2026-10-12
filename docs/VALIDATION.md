@@ -119,3 +119,25 @@ specialized windows may still need their own anchoring classification.
 
 The test suite does not launch the copyrighted game in CI. Automated package
 build success is distinct from successful gameplay validation.
+
+## Modern controls (runtime revision 14)
+
+- 31 Python tests and 10 Node tests pass locally. Coverage includes native input
+  event pairs, focus loss, UI locks, modifiers, held keys, double-clicks, menu
+  pause suppression, opt-out, cleanup and Shift camera-pan scaling.
+- The actual installed hotkey file upgrades without conflicts and the
+  transformation is idempotent. Existing backup and restore tests also pass.
+- WndProc, keyboard bridge, hotkey-gate and camera-pan signatures were checked
+  against the supported unpacked executable without attaching a new analysis
+  session. The keyboard camera path at 0x43d740 checks UI and foreground focus
+  before calling pan at 0x43d130 (return address 0x43dae9).
+- The packaged runtime was installed and launched at 3440 x 1440. Revision 14
+  reported ready with mouse shortcuts and 3x Shift boost enabled. The running
+  native hotkey table contained the new bindings with the expected modifiers.
+  A gameplay screenshot confirmed map and split-HUD rendering.
+- On 2026-10-11, the user confirmed Q/E rotation, R/V zoom and both mouse side
+  buttons. The user also confirmed that Shift with WASD accelerates panning,
+  releasing Shift restores normal speed, and no conflicting panels open.
+- Save/load/quick-save dialogs, every text-entry context, other mouse drivers,
+  editor/multiplayer behavior and prolonged play have not been exhaustively
+  tested. Mock tests do not replace those interactive compatibility checks.
