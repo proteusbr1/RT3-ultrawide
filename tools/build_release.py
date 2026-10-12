@@ -12,6 +12,7 @@ from rt3_ultrawide import __version__
 from rt3_ultrawide.install import digest, wrapper_files
 from rt3_ultrawide.menu import archive_bytes
 from rt3_ultrawide.loading import archive_bytes as loading_archive_bytes
+from rt3_ultrawide.museum import metadata as museum_metadata, unpack as unpack_museum
 
 
 def main():
@@ -20,6 +21,8 @@ def main():
     wrapper_files()  # Verify the bundled dependency before packaging.
     archive_bytes()
     loading_archive_bytes()
+    for room in museum_metadata()["rooms"]:
+        unpack_museum(room)
     output = ROOT / "dist" / uuid.uuid4().hex
     subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], cwd=ROOT, check=True)
     subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed",

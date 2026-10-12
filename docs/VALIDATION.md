@@ -75,6 +75,37 @@ bounded to ten seconds; valid changed dimensions still stop the helper.
 
 ## Known limits
 
+### Museum candidate (0.4.0)
+
+- Observed original museum rooms/transitions at 3440 × 1440 with the low-resolution
+  mode-switch calls bypassed. The helper stayed attached instead of dropping to
+  720 × 480.
+- All four new 4096 × 2048 textures uploaded successfully through the native
+  texture class in a fresh game process.
+- The 30-test suite passes, including all four BGRA payloads, checksum failure,
+  bounded decompression, path validation, original-mode opt-out and process reuse.
+- The packaged candidate installed successfully, persisted the 3440 × 1440
+  launcher configuration and started a fresh game. All four textures uploaded;
+  installed JavaScript/metadata matched the source checksums. A repeated Launch
+  recognized the active helper without injecting another session.
+- The first artwork candidate displayed a black museum. The drawing bridge now
+  consumes native UI depths, supplies RHW=1 and preserves native render flags.
+  The owner subsequently viewed the artwork and requested removal of the
+  procedural fan and replacement of the navigation design. Both are changed.
+- `node --test tests/museum_render.test.cjs` checks projection/depth/state,
+  square navigation, hover selection, absence of the fan, and the alpha endpoints
+  of all six room transitions. It also checks a single seek per transition,
+  approximately 0.55 seconds of remaining playback, and untouched room loops.
+  Interactive confirmation of the shortened input lock remains pending.
+  This does not emulate the graphics driver or the Bink decoder.
+- **Pending interactive validation:** actual painting composition in all rooms,
+  revised navigation, six dissolves, cabinet selection, medals, exit/re-entry, original-mode
+  launch and a gameplay load. This candidate is not yet
+  a confirmed public release.
+- Source paintings are 1942 × 809; 3840 × 1600 exports are resampled. This does
+  not reproduce every animation in the original movies. See
+  [museum artwork](MUSEUM_ARTWORK.md).
+
 This initial release is experimental. One game build and one physical resolution
 have been exercised interactively. The configurable resolution range is not a
 claim that every monitor, DPI setting, GPU, scenario, editor window, multiplayer

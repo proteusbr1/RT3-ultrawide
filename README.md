@@ -22,6 +22,9 @@ split between the bottom corners and correctly aligned mouse input.
   the original interactive buttons remain proportional.
 - Five expanded loading scenes fill the display while preserving the game's
   random scene selection, loading text, and progress indicator.
+- Four reimagined campaign museum rooms, with remapped cabinets, compact navigation
+  and smooth room dissolves. Original-video mode remains available in the launcher.
+- Prevent the museum's forced low-resolution switch from detaching the HUD helper.
 - **WASD** pans the camera; **Space** pauses/resumes.
 - dgVoodoo **2.87.5 is included**, with its watermark disabled in the installed configuration.
 - Local backups and a restore command. The game executable and saves are not modified.
@@ -31,6 +34,8 @@ AI-assisted background inspired by the original, with newly drawn side details.
 See [menu artwork and implementation](docs/MENU_ARTWORK.md).
 Loading screens also use new AI-assisted panoramas; see
 [loading artwork, source files, and prompts](docs/LOADING_ARTWORK.md).
+The optional [museum artwork](docs/MUSEUM_ARTWORK.md) uses 3840 × 1600 exports
+from smaller generated sources; it is an illustrated redesign, not remastered video.
 
 ![Expanded menu background; interactive buttons are drawn separately by the game](rt3_ultrawide/assets/menu-background.png)
 

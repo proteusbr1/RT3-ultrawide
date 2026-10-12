@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.0 — Unreleased (experimental)
+
+- Add four reimagined museum paintings with 3840 × 1600 exports, antialiased navigation
+  controls, frame-synchronized dissolves and repositioned campaign cabinet hit areas.
+- Reduce artwork-mode room changes to about 0.55 seconds, retaining the native
+  completion callback so navigation unlocks when the dissolve ends.
+- Preserve every original movie and offer original-animation mode in the launcher.
+- Prevent the campaign museum from forcing a 640 × 480 renderer/window recreation.
+- Extend the menu background fix to submenus with anonymous three-panel controls.
+- Refuse repeated helper injection into the same game process; an already-active
+  helper is recognized using PID plus process creation time.
+- Validate all four packed museum textures, bounded decompression and cache paths.
+
 ## 0.3.0 — 2026-10-11 (experimental)
 
 - Added five expanded loading panoramas: trestle bridge, penny on a rail,

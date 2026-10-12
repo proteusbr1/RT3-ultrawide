@@ -18,15 +18,20 @@ const signatures = [
   [0x552560, '83ec188b44241c56'],
   [0x45f420, '81ec180200005657'],
   [0x439e40, '83ec345355568bf1'],
-  [0x52d140, '8b4424048b542408']
+  [0x52d140, '8b4424048b542408'],
+  [0x55f4e0, '83ec1c568bf1e885'],
+  [0x4b8de1, 'e8ca780600'],
+  [0x4b8e8d, 'e81e780600'],
+  [0x543980, '538b5c240c558b6c'],
+  [0x4b8e60, '51535556578bf1e8']
 ];
 for (const [va, expected] of signatures) {
   const actual = Array.from(new Uint8Array(at(va).readByteArray(expected.length / 2)), b => b.toString(16).padStart(2, '0')).join('');
   if (actual !== expected) throw Error('Unsupported code or another hook at ' + va.toString(16) + ': ' + actual);
 }
 
-const state = Memory.alloc(224);
-state.writeByteArray(new Uint8Array(224));
+const state = Memory.alloc(256);
+state.writeByteArray(new Uint8Array(256));
 state.writeU32(Math.round(SCALE_X * 1048576));
 state.add(24).writeU32((1048576-state.readU32())*8);
 state.add(28).writeU32((1048576-state.readU32())*8);
@@ -38,6 +43,8 @@ const HUD_Y=1-HUD_BOTTOM;
 state.add(64).writeS32(Math.round(HUD_Y*16777216));
 const menuArt = typeof MENU_ART === 'undefined' ? null : MENU_ART;
 const loadingArt = typeof LOADING_ART === 'undefined' ? null : LOADING_ART;
+let museumRuntime=null;
+const museumDraw=new NativeCallback((c,w)=>museumRuntime?museumRuntime.draw(c,w):0,'int',['pointer','pointer']);
 if (menuArt) {
   const aspect = (4 / 3) / SCALE_X, artAspect = menuArt.image_width / menuArt.image_height;
   // Uniform cover: narrower screens crop the sides; wider screens crop below.
@@ -90,13 +97,14 @@ const native = new CModule(`
 #include <gum/guminterceptor.h>
 extern unsigned int state[];
 extern void split_skin(void *renderer,unsigned int *args);
+extern int museum_draw(void *control,void *window);
 #define draw_depth (*(int *)(state + 4))
 #define input_depth (*(int *)(state + 5))
 #define draw_offset state[6]
 #define input_offset state[7]
 #define draw_y (*(int *)(state+13))
 #define input_y (*(int *)(state+14))
-typedef struct { unsigned int *p; unsigned int saved; int changed; int depth; unsigned int offset; unsigned int skin; int y; unsigned int saved_y; } Saved;
+typedef struct { unsigned int *p; unsigned int saved; int changed; int depth; unsigned int offset; unsigned int skin; int y; unsigned int saved_y; unsigned char *movie; unsigned int movie_rect[4]; unsigned int movie_bars; } Saved;
 /* Integer-only IEEE754 conversion avoids the target's x87 stack and flags. */
 static int fixed(unsigned int bits) {
   int e=(int)((bits>>23)&255)-126;
@@ -199,8 +207,24 @@ static unsigned int control_offset(unsigned char *c) {
   if(vt==0x5d0f3c && *(unsigned int *)(c+11)>0x3f000000) return (1048576-state[0])*16;
   return window_offset(w);
 }
+/* Setup submenus reuse the same three DDS panels with anonymous control IDs.
+ * Match the complete authored panel geometry, not every full-screen image. */
+static int menu_background(unsigned char *c,unsigned char *w){
+  unsigned char *a,*b,*d;
+  if(!state[26] || !w)return 0;
+  a=*(unsigned char **)(w+0x70);if(!a || *(unsigned short *)(a+6)!=4)return 0;
+  if(*(unsigned int *)(a+11)!=0 || *(unsigned int *)(a+15)!=0 || *(unsigned int *)(a+19)!=0x3f800000 ||
+     *(unsigned int *)(a+23)<0x3f599999 || *(unsigned int *)(a+23)>0x3f5b0000)return 0;
+  b=*(unsigned char **)(a+0x8e);if(!b || *(unsigned short *)(b+6)!=4)return 0;
+  d=*(unsigned char **)(b+0x8e);if(!d || *(unsigned short *)(d+6)!=4)return 0;
+  if(*(unsigned int *)(b+11)!=0 || *(unsigned int *)(b+15)<0x3f599999 ||
+     *(unsigned int *)(b+15)>0x3f5b0000 || *(unsigned int *)(d+11)<0x3f220000 ||
+     *(unsigned int *)(d+11)>0x3f250000 || *(unsigned int *)(d+15)!=*(unsigned int *)(b+15))return 0;
+  return c==a?1:((c==b || c==d)?2:0);
+}
 void window_draw_enter(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
+  s->movie=0;
   s->depth=draw_depth;
   /* Loading can draw its window directly between the regular UI frames. */
   if(state[27] && *(unsigned int *)ic->cpu_context->ecx==0x5d1194 && !draw_depth)draw_depth=1;
@@ -210,13 +234,27 @@ void window_draw_enter(GumInvocationContext *ic){
 }
 void control_draw_enter(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
+  s->movie=0;
   s->depth=draw_depth;
   s->offset=draw_offset;draw_offset=control_offset((unsigned char *)ic->cpu_context->ecx);
   s->y=draw_y;draw_y=control_y((unsigned char *)ic->cpu_context->ecx);
   {unsigned char *c=(unsigned char *)ic->cpu_context->ecx,*w=*(unsigned char **)(c+0x86);
    unsigned int id=*(unsigned short *)(c+4),vt=w?*(unsigned int *)w:0;
+   int menu=menu_background(c,w);
+   /* Museum movies were authored for a full 640x480 logical canvas. Keep their
+    * original decoder/timing but draw proportionally at the native height. */
+   if(vt==0x5d0570 && *(unsigned int *)c==0x5de2a8){
+     unsigned int n;s->movie=c;s->movie_bars=*(unsigned int *)(c+0xb2);
+     for(n=0;n<4;n++)s->movie_rect[n]=*(unsigned int *)(c+11+n*4);
+     *(unsigned int *)(c+11)=0;*(unsigned int *)(c+15)=0;
+     *(unsigned int *)(c+19)=0x3f800000;*(unsigned int *)(c+23)=0x3f800000;
+     *(unsigned int *)(c+0xb2)=0;
+     if(!draw_depth)draw_depth=1;
+   }
    s->skin=state[12];state[12]=vt==0x5d0eb8?(id==2057?1:(id==2058?2:0)):0;
+   if(s->movie && museum_draw(c,w))state[12]=5;
    if(state[26] && vt==0x5d1664 && id==3022)state[12]=3;
+   if(menu==1)state[12]=3;
    if(state[27] && vt==0x5d1194 && id==34003){
      unsigned char *options=*(unsigned char **)0x6cec74;
      unsigned int variant=options?options[0x2c7]:0;
@@ -225,10 +263,13 @@ void control_draw_enter(GumInvocationContext *ic){
    s->changed=(vt==0x5d0eb8 && id==2005) || (vt==0x5d0f3c && (id==31011 || id==31012 || id==31013));
    if(state[26] && vt==0x5d1664 && (id==3023 || id==3024 || id==3422))s->changed=1;
    if(state[27] && vt==0x5d1194 && (id==34004 || id==34005))s->changed=1;
+   if(state[30] && vt==0x5d0570 && *(unsigned short *)(c+6)==4 && (id<50050 || id>50065))s->changed=1;
+   if(menu==2)s->changed=1;
    if(s->changed){s->p=(unsigned int *)(c+0x68);s->saved=*s->p;*s->p &= ~1u;}}
 }
 void scope_draw_leave(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));draw_depth=s->depth;draw_offset=s->offset;draw_y=s->y;state[12]=s->skin;if(s->changed)*s->p=s->saved;
+  if(s->movie){unsigned int n;for(n=0;n<4;n++)*(unsigned int *)(s->movie+11+n*4)=s->movie_rect[n];*(unsigned int *)(s->movie+0xb2)=s->movie_bars;}
 }
 void selftest(void) { state[8]=forward(0); state[9]=forward(0x3f800000); state[10]=inverse(state[8]); }
 unsigned int test_forward(unsigned int x){return forward(x);}
@@ -243,6 +284,7 @@ void primitive(GumInvocationContext *ic) {
   a[1]=translate_y(a[1],draw_y);a[3]=translate_y(a[3],draw_y);state[2]++;
 }
 void quad_primitive(GumInvocationContext *ic){
+  if(draw_depth && state[12]==5){unsigned int *a=(unsigned int *)(ic->cpu_context->esp+4);a[2]=a[0];return;}
   if(draw_depth && (state[12]==3 || state[12]==4)){
     unsigned int *a=(unsigned int *)(ic->cpu_context->esp+4);
     unsigned int uv=state[12]==3?21:32+state[29]*4;
@@ -266,6 +308,7 @@ void event_enter(GumInvocationContext *ic) {
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
   s->changed=0;
   s->offset=input_offset;s->y=input_y;
+  if(event && *(unsigned int *)ic->cpu_context->ecx==0x5d0570 && !input_depth){state[60]=*(unsigned int *)(event+36);state[61]=*(unsigned int *)(event+40);}
   if(!input_depth){input_offset=window_offset((unsigned char *)ic->cpu_context->ecx);input_y=window_y((unsigned char *)ic->cpu_context->ecx);}
   if(!input_depth && event){s->p=(unsigned int *)(event+36);s->saved=*s->p;*s->p=inverse(s->saved);s->saved_y=s->p[1];s->p[1]=translate_y(s->saved_y,-input_y);s->changed=1;}
   input_depth++;
@@ -325,7 +368,7 @@ void cursor_leave(GumInvocationContext *ic){
   Saved *s=gum_invocation_context_get_listener_invocation_data(ic,sizeof(Saved));
   if(s->changed){draw_offset=s->offset;draw_depth=s->depth;draw_y=s->y;}
 }
-`, {state,split_skin:splitSkin});
+`, {state,split_skin:splitSkin,museum_draw:museumDraw});
 new NativeFunction(native.selftest,'void',[])();
 const test=[32,36,40].map(o=>state.add(o).readFloat());
 if(Math.abs(test[0]-(1-SCALE_X)/2)>0.00001 || Math.abs(test[1]-(1+SCALE_X)/2)>0.00001 || Math.abs(test[2])>0.00001) throw Error('Native arithmetic self-test failed: '+test);
@@ -375,6 +418,7 @@ const updateCamera=new NativeFunction(native.update_camera,"void",[]);
 let hotkeysReloaded=false;
 Interceptor.attach(at(0x538b60), {
   onEnter(){
+    if(museumRuntime)museumRuntime.prepare();
     // Native loader runs once on the game's own UI thread, between input frames.
     if(!hotkeysReloaded){
       hotkeysReloaded=true;
@@ -413,7 +457,7 @@ Interceptor.attach(at(0x53fda0), {onEnter:native.window_draw_enter,onLeave:nativ
 Interceptor.attach(at(0x552560), {onEnter:native.cursor_enter,onLeave:native.cursor_leave});
 Interceptor.attach(at(0x52d140), {onEnter:native.camera_rect});
 const drawHooks=new Set();
-for(const vt of [0x5ddd18,0x5dd870,0x5ddd98,0x5de360,0x5de3b0,0x5ce840]){
+for(const vt of [0x5ddd18,0x5dd870,0x5ddd98,0x5de360,0x5de3b0,0x5ce840,0x5de2a8]){
   const fn=at(vt).add(0x18).readPointer();
   if(!drawHooks.has(fn.toString())){
     drawHooks.add(fn.toString());
@@ -425,6 +469,13 @@ const renderer=at(0x6d4024).readPointer();
 const mode=renderer.add(0x34).readPointer().add(renderer.add(0x11421e).readU32()*21);
 const screenWidth=mode.readU32(),screenHeight=mode.add(4).readU32();
 const savedFullscreen=renderer.add(0x114226).readU8();
+museumRuntime=createMuseumRuntime({at,quad,state,renderer,scale:SCALE_X,artwork:typeof MUSEUM_ART==='undefined'?null:MUSEUM_ART});
+Interceptor.attach(at(0x4b8e60),{onEnter(){this.window=this.context.ecx;},onLeave(){if(museumRuntime.newWindow)museumRuntime.newWindow(this.window);}});
+// Only the museum constructor/destructor request a temporary 640x480 display.
+// Replace these two CALLs with the callee's stack cleanup (RET 16), preserving
+// every other mode change. Never write these patches to RT3.exe on disk.
+const museumModeCalls=[0x4b8de1,0x4b8e8d].map(va=>({address:at(va),bytes:at(va).readByteArray(5)}));
+for(const patch of museumModeCalls)Memory.patchCode(patch.address,5,p=>p.writeByteArray([0x83,0xc4,0x10,0x90,0x90]));
 // The device is already created at native resolution. dgVoodoo owns a borderless
 // window; make the engine use its windowed focus/mouse paths after initialization.
 renderer.add(0x114226).writeU8(0);
@@ -441,17 +492,23 @@ for(const name of ['ShowWindow','SetWindowPos','DefWindowProcA']){
 send({imports});
 rpc.exports={
   restore(){state.add(80).writeU32(1);renderer.add(0x114226).writeU8(savedFullscreen);
+    museumRuntime.restore();
+    for(const patch of museumModeCalls)Memory.patchCode(patch.address,5,p=>p.writeByteArray(patch.bytes));
     const camera=at(0x62be68).readPointer();
     if(!camera.isNull() && camera.equals(state.add(68).readPointer()) && camera.readPointer().equals(at(0x5ca078))){
       camera.add(0x5c).writeU32(state.add(72).readU32());camera.add(0x64).writeU8(1);camera.add(0x65).writeU8(1);
     }
   },
   inspect(){const out=[];let w=at(0x6d401c).readPointer().readPointer();for(let n=0;!w.isNull()&&n<50;n++,w=w.add(0x58).readPointer()){
-    let cs=[],c=w.add(0x70).readPointer();for(let j=0;!c.isNull()&&j<300;j++,c=c.add(0x8e).readPointer())cs.push({id:c.add(4).readU16(),type:c.add(6).readU16(),v:c.readPointer().toString(),rect:[11,15,19,23].map(o=>c.add(o).readFloat())});
+    let cs=[],c=w.add(0x70).readPointer();for(let j=0;!c.isNull()&&j<300;j++,c=c.add(0x8e).readPointer()){
+      const item={id:c.add(4).readU16(),type:c.add(6).readU16(),v:c.readPointer().toString(),rect:[11,15,19,23].map(o=>c.add(o).readFloat())};
+      if(c.readPointer().equals(at(0x5de2a8))){const bink=c.add(0xf2).readPointer(),id=c.add(0xea).readU32();item.movie={id,name:id<100?at(0x625830+id*16).readPointer().readCString():null,frame:bink.isNull()?null:bink.add(12).readU32(),frames:bink.isNull()?null:bink.add(8).readU32()};}
+      cs.push(item);
+    }
     out.push({p:w.toString(),v:w.readPointer().toString(),visible:w.add(0x5c).readU32(),rect:[5,9,13,17].map(o=>w.add(o).readFloat()),controls:cs});
   }const hotkeys=[];for(let key=0;key<256;key++){let p=at(0x6acd78+key*12).readPointer();for(let i=0;!p.isNull()&&i<100;i++,p=p.readPointer())hotkeys.push({key,modifier:p.add(0x94).readU32(),description:p.add(0x10).readCString()});}
   const camera=at(0x62be68).readPointer();
   return {windows:out,hotkeys,rightPanelVisible:state.add(60).readU32(),hudY:HUD_Y,fullscreen:renderer.add(0x114226).readU8(),cameraRect:camera.isNull()?null:[0x50,0x54,0x58,0x5c].map(o=>camera.add(o).readFloat()),cameraUpdates:state.add(76).readU32(),viewports:Array.from(viewportSamples)};},
-  stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),loadingQuads:state.add(112).readU32(),loadingVariant:state.add(116).readU32(),selftest:test};}
+  stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),loadingQuads:state.add(112).readU32(),loadingVariant:state.add(116).readU32(),museum:{enabled:museumRuntime.enabled,frames:museumRuntime.frames,room:museumRuntime.room,transition:museumRuntime.transition,error:museumRuntime.error},selftest:test};}
 };
-send({ready:true,revision:11,menuArtwork:!!menuArt,loadingArtwork:!!loadingArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
+send({ready:true,revision:12,museumNativeResolution:true,menuArtwork:!!menuArt,loadingArtwork:!!loadingArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
