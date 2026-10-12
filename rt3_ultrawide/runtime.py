@@ -16,6 +16,7 @@ from .install import STATE, atomic_write, check_game, digest, prepare_launch
 from .menu import installed_metadata
 from .loading import installed_metadata as installed_loading_metadata
 from .museum import prepare as prepare_museum
+from .controls import enabled as mouse_shortcuts_enabled
 
 PROBE = """
 let unpacked=false;
@@ -154,11 +155,14 @@ def run(game):
             scale = (height * 4 / 3) / width
             source = (Path(__file__).parent / "assets/ultrawide.js").read_text(encoding="utf-8")
             museum_source = (Path(__file__).parent / "assets/museum.js").read_text(encoding="utf-8")
+            controls_source = (Path(__file__).parent / "assets/controls.js").read_text(encoding="utf-8")
             menu = installed_metadata(game)
             loading = installed_loading_metadata(game)
             script = session.create_script(f"const SCALE_X={scale!r};\nconst MENU_ART={json.dumps(menu)};\n"
                                            f"const LOADING_ART={json.dumps(loading)};\n"
-                                           f"const MUSEUM_ART={json.dumps(museum)};\n" + museum_source + "\n" + source)
+                                           f"const MUSEUM_ART={json.dumps(museum)};\n"
+                                           f"const MOUSE_SHORTCUTS={json.dumps(mouse_shortcuts_enabled(game))};\n"
+                                           + controls_source + "\n" + museum_source + "\n" + source)
             script.on("message", message)
             script.load()
             if not ready.wait(5) or errors:
@@ -211,7 +215,7 @@ def launch(game):
             ready = json.loads((folder / "ready.json").read_text(encoding="utf-8"))
             if (ready.get("game_token") == process_token(candidates[0].pid)
                     and ready.get("helper_token") == process_token(ready["helper_pid"])):
-                return "Ultrawide is already active. Changed museum preferences apply after restarting RT3."
+                return "Ultrawide is already active. Changed preferences apply after restarting RT3."
         except (OSError, ValueError, KeyError):
             pass
     if not processes():

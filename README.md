@@ -25,7 +25,9 @@ split between the bottom corners and correctly aligned mouse input.
 - Four reimagined campaign museum rooms, with remapped cabinets, compact navigation
   and smooth room dissolves. Original-video mode remains available in the launcher.
 - Prevent the museum's forced low-resolution switch from detaching the HUD helper.
-- **WASD** pans the camera; **Space** pauses/resumes.
+- **WASD** pans; hold **Shift** for 3x panning. **Q/E** rotates, **R/V** zooms, and **Space** pauses.
+- Mouse side buttons cancel/back and pause; **Ctrl+S/Ctrl+O** save/load, **F5** quick-saves.
+  See [all controls and replaced bindings](docs/CONTROLS.md).
 - dgVoodoo **2.87.5 is included**, with its watermark disabled in the installed configuration.
 - Local backups and a restore command. The game executable and saves are not modified.
 

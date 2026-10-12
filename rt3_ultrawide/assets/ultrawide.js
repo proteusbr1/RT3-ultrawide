@@ -3,6 +3,10 @@
 const base = Process.getModuleByName('RT3.exe').base;
 const at = va => base.add(va - 0x400000);
 const signatures = [
+  [0x43d130, '558bec83e4f883ec'],
+  [0x54e3a0, '538b5c2414558b6c'],
+  [0x54f290, '81ec340100005356'],
+  [0x538a60, '8b91600c000033c0'],
   [0x538b60, '51568bf18a86680c'],
   [0x51f460, '568bf18b4e5881f9'],
   [0x51f370, '568bf18b4e5881f9'],
@@ -470,6 +474,8 @@ const mode=renderer.add(0x34).readPointer().add(renderer.add(0x11421e).readU32()
 const screenWidth=mode.readU32(),screenHeight=mode.add(4).readU32();
 const savedFullscreen=renderer.add(0x114226).readU8();
 museumRuntime=createMuseumRuntime({at,quad,state,renderer,scale:SCALE_X,artwork:typeof MUSEUM_ART==='undefined'?null:MUSEUM_ART});
+const controlsRuntime=createControlsRuntime({at,enabled:typeof MOUSE_SHORTCUTS!=='undefined' && MOUSE_SHORTCUTS});
+const cameraBoostRuntime=createCameraBoostRuntime({at});
 Interceptor.attach(at(0x4b8e60),{onEnter(){this.window=this.context.ecx;},onLeave(){if(museumRuntime.newWindow)museumRuntime.newWindow(this.window);}});
 // Only the museum constructor/destructor request a temporary 640x480 display.
 // Replace these two CALLs with the callee's stack cleanup (RET 16), preserving
@@ -493,6 +499,8 @@ send({imports});
 rpc.exports={
   restore(){state.add(80).writeU32(1);renderer.add(0x114226).writeU8(savedFullscreen);
     museumRuntime.restore();
+    controlsRuntime.restore();
+    cameraBoostRuntime.restore();
     for(const patch of museumModeCalls)Memory.patchCode(patch.address,5,p=>p.writeByteArray(patch.bytes));
     const camera=at(0x62be68).readPointer();
     if(!camera.isNull() && camera.equals(state.add(68).readPointer()) && camera.readPointer().equals(at(0x5ca078))){
@@ -509,6 +517,6 @@ rpc.exports={
   }const hotkeys=[];for(let key=0;key<256;key++){let p=at(0x6acd78+key*12).readPointer();for(let i=0;!p.isNull()&&i<100;i++,p=p.readPointer())hotkeys.push({key,modifier:p.add(0x94).readU32(),description:p.add(0x10).readCString()});}
   const camera=at(0x62be68).readPointer();
   return {windows:out,hotkeys,rightPanelVisible:state.add(60).readU32(),hudY:HUD_Y,fullscreen:renderer.add(0x114226).readU8(),cameraRect:camera.isNull()?null:[0x50,0x54,0x58,0x5c].map(o=>camera.add(o).readFloat()),cameraUpdates:state.add(76).readU32(),viewports:Array.from(viewportSamples)};},
-  stats(){return {scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),loadingQuads:state.add(112).readU32(),loadingVariant:state.add(116).readU32(),museum:{enabled:museumRuntime.enabled,frames:museumRuntime.frames,room:museumRuntime.room,transition:museumRuntime.transition,error:museumRuntime.error},selftest:test};}
+  stats(){return {cameraBoost:cameraBoostRuntime.stats(),controls:controlsRuntime.stats(),scale:SCALE_X,primitives:state.add(8).readU32(),drawDepth:state.add(16).readS32(),inputDepth:state.add(20).readS32(),minimapPoints:state.add(44).readU32(),loadingQuads:state.add(112).readU32(),loadingVariant:state.add(116).readU32(),museum:{enabled:museumRuntime.enabled,frames:museumRuntime.frames,room:museumRuntime.room,transition:museumRuntime.transition,error:museumRuntime.error},selftest:test};}
 };
-send({ready:true,revision:12,museumNativeResolution:true,menuArtwork:!!menuArt,loadingArtwork:!!loadingArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});
+send({ready:true,revision:14,shiftCameraBoost:3,mouseShortcuts:controlsRuntime.stats().enabled,museumNativeResolution:true,menuArtwork:!!menuArt,loadingArtwork:!!loadingArt,scale:SCALE_X,hudSplit:HUD_SPLIT,hudY:HUD_Y,autoHideRight:true,fullCameraViewport:true,footer:false,experimental:true,selftest:test});

@@ -12,6 +12,7 @@ from tkinter import filedialog, messagebox, ttk
 from . import __version__
 from .install import install, uninstall
 from .runtime import launch
+from .controls import enabled as mouse_enabled, set_enabled as set_mouse_enabled
 
 
 def find_game():
@@ -43,8 +44,8 @@ def show():
         pass
     root = tk.Tk()
     root.title("Railroad Tycoon 3 • Ultrawide")
-    root.geometry("740x570")
-    root.minsize(660, 540)
+    root.geometry("740x610")
+    root.minsize(660, 580)
     style = ttk.Style(root)
     if "vista" in style.theme_names():
         style.theme_use("vista")
@@ -79,6 +80,9 @@ def show():
     reimagined = tk.BooleanVar(value=not (Path(game.get()) / "RT3Ultrawide/ORIGINAL_MUSEUM").exists())
     ttk.Checkbutton(frame, text="Reimagined museum artwork (applies on the next Launch)",
                     variable=reimagined).grid(sticky="w", pady=(0, 14))
+    mouse_shortcuts = tk.BooleanVar(value=mouse_enabled(Path(game.get())))
+    ttk.Checkbutton(frame, text="Mouse side buttons: Back = Escape, Forward = Pause (next Launch)",
+                    variable=mouse_shortcuts).grid(sticky="w", pady=(0, 14))
     ttk.Label(frame, text="Save and exit the game before installing or restoring.\n"
               "dgVoodoo 2.87.5 is included. Original settings are backed up locally.",
               wraplength=660).grid(sticky="w", pady=(0, 16))
@@ -86,9 +90,9 @@ def show():
     buttons.grid(sticky="w", pady=(0, 12))
     status = tk.StringVar(value="Choose your game folder, then install. After installation, use Launch.")
     ttk.Label(frame, textvariable=status, wraplength=650, justify="left").grid(sticky="nw")
-    frame.rowconfigure(9, weight=1)
+    frame.rowconfigure(10, weight=1)
     ttk.Label(frame, text="Backups and logs: <game folder> / RT3Ultrawide\n"
-              "Help: github.com/proteusbr1/RT3-ultrawide", foreground="#555555").grid(row=10, sticky="sw", pady=(18, 0))
+              "Help: github.com/proteusbr1/RT3-ultrawide", foreground="#555555").grid(row=11, sticky="sw", pady=(18, 0))
     results = queue.Queue()
     active = False
     controls = []
@@ -103,6 +107,7 @@ def show():
                 raise ValueError("Select the folder containing RT3.exe.")
             w, h = int(width.get()), int(height.get())
             use_museum_art = reimagined.get()
+            use_mouse_shortcuts = mouse_shortcuts.get()
         except ValueError as error:
             messagebox.showerror("Check your settings", str(error))
             return
@@ -122,6 +127,7 @@ def show():
                     result = install(folder, w, h)
                     from .museum import set_style
                     set_style(folder, use_museum_art)
+                    set_mouse_enabled(folder, use_mouse_shortcuts)
                 elif action == "restore":
                     result = uninstall(folder, preserve_changed=True)
                 elif action == "doctor":
@@ -136,6 +142,7 @@ def show():
                 else:
                     from .museum import set_style
                     set_style(folder, use_museum_art)
+                    set_mouse_enabled(folder, use_mouse_shortcuts)
                     result = launch(folder)
                 results.put((True, result))
             except Exception as error:
